@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temporizador de Meditação</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        .container {
+            text-align: center;
+            color: white;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .timer-circle {
+            width: 280px;
+            height: 280px;
+            border: 8px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            margin: 0 auto 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .timer-circle.pulsing {
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 60px rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        .time-display {
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: -2px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-ring {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            width: 280px;
+            height: 280px;
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.8);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 879.6;
+            stroke-dashoffset: 879.6;
+            transition: stroke-dashoffset 1s linear;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            color: white;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .status {
+            font-size: 1.2rem;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-top: 1rem;
+        }
+
+        .completion-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            display: none;
+            z-index: 1000;
+        }
+
+        @media (max-width: 480px) {
+            .timer-circle {
+                width: 220px;
+                height: 220px;
+            }
+            
+            .time-display {
+                font-size: 2.5rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h1 class="title">Meditação Mindful</h1>
+        
+        <div class="timer-circle" id="timerCircle">
+            <svg class="progress-ring">
+                <circle class="progress-ring-circle" cx="140" cy="140" r="140" id="progressCircle"></circle>
+            </svg>
+            <div class="time-display" id="timeDisplay">15:00</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn">Iniciar</button>
+            <button class="btn btn-secondary" id="resetBtn">Reiniciar</button>
+        </div>
+        
+        <div class="status" id="status">Pronto para começar sua meditação</div>
+    </main>
+
+    <div class="completion-message" id="completionMessage">
+        <div>🧘‍♀️ Sessão de meditação concluída!</div>
+        <div style="font-size: 1rem; margin-top: 1rem; font-weight: 400;">
+            Parabéns por dedicar este tempo ao seu bem-estar
+        </div>
+    </div>
+
+    <script>
+        class MeditationTimer {
+            constructor() {
+                this.totalTime = 15 * 60; // 15 minutos em segundos
+                this.timeLeft = this.totalTime;
+                this.isRunning = false;
+                this.interval = null;
+                
+                this.timerCircle = document.getElementById('timerCircle');
+                this.timeDisplay = document.getElementById('timeDisplay');
+                this.startBtn = document.getElementById('startBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.status = document.getElementById('status');
+                this.progressCircle = document.getElementById('progressCircle');
+                this.completionMessage = document.getElementById('completionMessage');
+                
+                this.circumference = 2 * Math.PI * 140;
+                this.progressCircle.style.strokeDasharray = this.circumference;
+                this.progressCircle.style.strokeDashoffset = this.circumference;
+                
+                this.bindEvents();
+                this.updateDisplay();
+            }
+            
+            bindEvents() {
+                this.startBtn.addEventListener('click', () => this.toggleTimer());
+                this.resetBtn.addEventListener('click', () => this.resetTimer());
+            }
+            
+            toggleTimer() {
+                if (this.isRunning) {
+                    this.pauseTimer();
+                } else {
+                    this.startTimer();
+                }
+            }
+            
+            startTimer() {
+                this.isRunning = true;
+                this.startBtn.textContent = 'Pausar';
+                this.status.textContent = 'Respirando... Mantenha o foco';
+                this.timerCircle.classList.add('pulsing');
+                
+                this.interval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateDisplay();
+                    
+                    if (this.timeLeft <= 0) {
+                        this.completeTimer();
+                    }
+                }, 1000);
+            }
+            
+            pauseTimer() {
+                this.isRunning = false;
+                this.startBtn.textContent = 'Continuar';
+                this.status.textContent = 'Pausado - Clique para continuar';
+                this.timerCircle.classList.remove('pulsing');
+                clearInterval(this.interval);
+            }
+            
+            resetTimer() {
+                this.isRunning = false;
+                this.timeLeft = this.totalTime;
+                this.startBtn.textContent = 'Iniciar';
+                this.status.textContent = 'Pronto para começar sua meditação';
+                this.timerCircle.classList.remove('pulsing');
+                this.completionMessage.style.display = 'none';
+                clearInterval(this.interval);
+                this.updateDisplay();
+            }
+            
+            completeTimer() {
+                this.isRunning = false;
+                this.startBtn.textContent = 'Iniciar';
+                this.status.textContent = 'Sessão concluída! 🎉';
+                this.timerCircle.classList.remove('pulsing');
+                clearInterval(this.interval);
+                
+                // Mostrar mensagem de conclusão
+                this.completionMessage.style.display = 'block';
+                
+                // Simular alerta sonoro sutil com vibração visual
+                this.timerCircle.style.animation = 'pulse 0.5s ease-in-out 3';
+                
+                // Esconder mensagem após 4 segundos
+                setTimeout(() => {
+                    this.completionMessage.style.display = 'none';
+                }, 4000);
+            }
+            
+            updateDisplay() {
+                const minutes = Math.floor(this.timeLeft / 60);
+                const seconds = this.timeLeft % 60;
+                this.timeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Atualizar progresso circular
+                const progress = (this.totalTime - this.timeLeft) / this.totalTime;
+                const offset = this.circumference - (progress * this.circumference);
+                this.progressCircle.style.strokeDashoffset = offset;
+            }
+        }
+        
+        // Inicializar o temporizador quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            new MeditationTimer();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'993f2fbb878d72f1',t:'MTc2MTM2ODgwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
